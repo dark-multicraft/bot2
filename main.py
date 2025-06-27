@@ -5,7 +5,7 @@ from telethon.sessions import StringSession # 追加
 from googletrans import Translator
 from dotenv import load_dotenv
 
-# .envファイルから環境変数を読み込む。
+# .envファイルから環境変数を読み込む
 load_dotenv()
 
 # 環境変数から設定を読み込む
