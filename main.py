@@ -20,12 +20,15 @@ STRING_SESSION = os.getenv('STRING_SESSION', None) # 追加
 translator = Translator()
 
 # Telethonクライアントの初期化
+session_object = None
 if STRING_SESSION:
-    client = TelegramClient(StringSession(STRING_SESSION), API_ID, API_HASH)
+    session_object = StringSession(STRING_SESSION)
 else:
-    # 初回実行時やStringSessionがない場合、通常のセッション名で起動
-    # この場合、ローカルで一度実行してセッション文字列を取得する必要があります
-    client = TelegramClient('telegram_session', API_ID, API_HASH)
+    # STRING_SESSIONが設定されていない場合、空のStringSessionを作成し、
+    # 認証後にそのセッション文字列をエクスポートできるようにします。
+    session_object = StringSession()
+
+client = TelegramClient(session_object, API_ID, API_HASH)
 
 
 def translate_and_send_to_discord(message_text):
