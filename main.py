@@ -1,7 +1,7 @@
-
 import os
 import requests
 from telethon import TelegramClient, events
+from telethon.sessions import StringSession # 追加
 from googletrans import Translator
 from dotenv import load_dotenv
 
@@ -9,20 +9,24 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # 環境変数から設定を読み込む
-API_ID = os.getenv('API_ID')
+API_ID = int(os.getenv('API_ID')) # intに変換
 API_HASH = os.getenv('API_HASH')
 TELEGRAM_CHANNEL_ID = int(os.getenv('TELEGRAM_CHANNEL_ID'))
 DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL')
-SESSION_NAME = os.getenv('SESSION_NAME', 'telegram_session')
+# SESSION_NAME = os.getenv('SESSION_NAME', 'telegram_session') # 削除またはコメントアウト
+STRING_SESSION = os.getenv('STRING_SESSION', None) # 追加
 
 # Google翻訳の初期化
 translator = Translator()
 
 # Telethonクライアントの初期化
-# Renderで実行する場合、セッションファイルは永続化されない可能性があるため、
-# 起動のたびに電話番号やパスワードの入力が必要になる場合があります。
-# 初回実行時にローカルで.sessionファイルを生成し、それをRenderにアップロードする方法もあります。
-client = TelegramClient(SESSION_NAME, API_ID, API_HASH)
+if STRING_SESSION:
+    client = TelegramClient(StringSession(STRING_SESSION), API_ID, API_HASH)
+else:
+    # 初回実行時やStringSessionがない場合、通常のセッション名で起動
+    # この場合、ローカルで一度実行してセッション文字列を取得する必要があります
+    client = TelegramClient('telegram_session', API_ID, API_HASH)
+
 
 def translate_and_send_to_discord(message_text):
     """メッセージを翻訳し、Discordに送信する"""
@@ -61,6 +65,11 @@ async def main():
     await client.start()
     print("Client Created and Connected!")
     
+    # StringSessionが設定されていない場合、セッション文字列を表示
+    if not STRING_SESSION:
+        print("Please save this string as STRING_SESSION environment variable:")
+        print(client.session.save())
+
     # 接続が切れないように待機
     await client.run_until_disconnected()
 
