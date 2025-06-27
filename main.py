@@ -68,7 +68,7 @@ async def main():
     # StringSessionが設定されていない場合、セッション文字列を表示
     if not STRING_SESSION:
         print("Please save this string as STRING_SESSION environment variable:")
-        print(client.session.save())
+        print(client.session.export_string())
 
     # 接続が切れないように待機
     await client.run_until_disconnected()
