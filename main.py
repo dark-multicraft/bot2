@@ -1,20 +1,22 @@
 import os
 import requests
 from telethon import TelegramClient, events
-from telethon.sessions import StringSession # 追加
+from telethon.sessions import StringSession
 from googletrans import Translator
 from dotenv import load_dotenv
+from flask import Flask, request # Added Flask import
+import asyncio
+import threading # Added threading import
 
 # .envファイルから環境変数を読み込む
 load_dotenv()
 
 # 環境変数から設定を読み込む
-API_ID = int(os.getenv('API_ID')) # intに変換
+API_ID = int(os.getenv('API_ID'))
 API_HASH = os.getenv('API_HASH')
 TELEGRAM_CHANNEL_ID = int(os.getenv('TELEGRAM_CHANNEL_ID'))
 DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL')
-# SESSION_NAME = os.getenv('SESSION_NAME', 'telegram_session') # 削除またはコメントアウト
-STRING_SESSION = os.getenv('STRING_SESSION', None) # 追加
+STRING_SESSION = os.getenv('STRING_SESSION', None)
 
 # Google翻訳の初期化
 translator = Translator()
@@ -24,12 +26,20 @@ session_object = None
 if STRING_SESSION:
     session_object = StringSession(STRING_SESSION)
 else:
-    # STRING_SESSIONが設定されていない場合、空のStringSessionを作成し、
-    # 認証後にそのセッション文字列をエクスポートできるようにします。
     session_object = StringSession()
 
 client = TelegramClient(session_object, API_ID, API_HASH)
 
+# Flaskアプリの初期化
+app = Flask(__name__)
+
+@app.route('/')
+def hello_world():
+    return 'Bot is running!', 200
+
+def run_flask():
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
 
 def translate_and_send_to_discord(message_text):
     """メッセージを翻訳し、Discordに送信する"""
@@ -73,10 +83,13 @@ async def main():
         print("Please save this string as STRING_SESSION environment variable:")
         print(client.session.save())
 
+    # Flaskアプリを別スレッドで起動
+    flask_thread = threading.Thread(target=run_flask)
+    flask_thread.start()
+
     # 接続が切れないように待機
     await client.run_until_disconnected()
 
 if __name__ == '__main__':
     # イベントループを開始
-    import asyncio
     asyncio.run(main())
