@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from flask import Flask, request
 import asyncio
 import threading
+import sys # Added sys import
 
 # .envファイルから環境変数を読み込む
 load_dotenv()
@@ -22,12 +23,13 @@ STRING_SESSION = os.getenv('STRING_SESSION', None)
 translator = Translator()
 
 # Telethonクライアントの初期化
-session_object = None
-if STRING_SESSION:
-    session_object = StringSession(STRING_SESSION)
-else:
-    session_object = StringSession()
+# STRING_SESSIONが設定されていない場合はエラーとして終了
+if not STRING_SESSION:
+    print("Error: STRING_SESSION environment variable is not set.")
+    print("Please set STRING_SESSION with your Telegram session string.")
+    sys.exit(1) # Exit with an error code
 
+session_object = StringSession(STRING_SESSION)
 client = TelegramClient(session_object, API_ID, API_HASH)
 
 # Flaskアプリの初期化
@@ -88,11 +90,6 @@ async def main():
     await client.start()
     print("Client Created and Connected!")
     
-    # StringSessionが設定されていない場合、セッション文字列を表示
-    if not STRING_SESSION:
-        print("Please save this string as STRING_SESSION environment variable:")
-        print(client.session.save())
-
     # ボット起動時にDiscordにメッセージを送信
     send_discord_message("Telegram bot has started!")
 
