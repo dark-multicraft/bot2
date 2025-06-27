@@ -4,9 +4,9 @@ from telethon import TelegramClient, events
 from telethon.sessions import StringSession
 from googletrans import Translator
 from dotenv import load_dotenv
-from flask import Flask, request # Added Flask import
+from flask import Flask, request
 import asyncio
-import threading # Added threading import
+import threading
 
 # .envファイルから環境変数を読み込む
 load_dotenv()
@@ -40,6 +40,16 @@ def hello_world():
 def run_flask():
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
+
+def send_discord_message(message):
+    """Discordにメッセージを送信するヘルパー関数"""
+    try:
+        payload = {'content': message}
+        response = requests.post(DISCORD_WEBHOOK_URL, json=payload)
+        response.raise_for_status()
+        print(f"Successfully sent message to Discord: {message}")
+    except Exception as e:
+        print(f"Failed to send message to Discord: {e}")
 
 def translate_and_send_to_discord(message_text):
     """メッセージを翻訳し、Discordに送信する"""
@@ -82,6 +92,9 @@ async def main():
     if not STRING_SESSION:
         print("Please save this string as STRING_SESSION environment variable:")
         print(client.session.save())
+
+    # ボット起動時にDiscordにメッセージを送信
+    send_discord_message("Telegram bot has started!")
 
     # Flaskアプリを別スレッドで起動
     flask_thread = threading.Thread(target=run_flask)
