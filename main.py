@@ -106,9 +106,6 @@ async def main():
     # 接続し、準備ができるまで待つ
     await client.start()
     print("Client Created and Connected!")
-    
-    # ボット起動時にDiscordにメッセージを送信
-    send_discord_message("Telegram bot has started!")
 
     # Flaskアプリを別スレッドで起動
     flask_thread = threading.Thread(target=run_flask)
