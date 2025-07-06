@@ -105,9 +105,8 @@ async def main():
     """メインの実行関数"""
     # 接続し、準備ができるまで待つ
     await client.start()
-    print("Client Created and Connected!")
 
-    # Flaskアプリを別スレッドで起動
+    # Flaskアプリを別スreadで起動
     flask_thread = threading.Thread(target=run_flask)
     flask_thread.start()
 
